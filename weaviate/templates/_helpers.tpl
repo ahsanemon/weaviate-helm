@@ -59,6 +59,9 @@
   {{- if (index .Values "modules" "text2vec-palm" "enabled") -}}
     {{ $modules = append $modules "text2vec-palm" }}
   {{- end -}}
+  {{- if (index .Values "modules" "text2vec-jinaai" "enabled") -}}
+    {{ $modules = append $modules "text2vec-jinaai" }}
+  {{- end -}}
   {{- if (index .Values "modules" "ref2vec-centroid" "enabled") -}}
     {{ $modules = append $modules "ref2vec-centroid" }}
   {{- end -}}
@@ -107,6 +110,26 @@ imagePullSecrets:
   - name: {{ . }}
     {{- end -}}
   {{- end -}}
+{{- end -}}
+
+{{/*
+Cluster API Secrets
+*/}}
+{{- define "cluster_api.secret" -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace "weaviate-cluster-api-basic-auth" -}}
+{{- if $secret -}}
+{{/*
+   Reusing value of secret if exist
+*/}}
+username: {{ $secret.data.username }}
+password: {{ $secret.data.password }}
+{{- else -}}
+{{/*
+    add new data
+*/}}
+username: {{ randAlphaNum 32 | b64enc | quote }}
+password: {{ randAlphaNum 32 | b64enc | quote }}
+{{- end -}}
 {{- end -}}
 
 {{/* 
